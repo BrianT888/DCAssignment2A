@@ -46,13 +46,10 @@ namespace DCAssignment2A.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("AccountNumber")
-                        .HasColumnType("INTEGER");
-
                     b.Property<decimal>("Amount")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("BankAccountId")
+                    b.Property<int>("BankAccountId")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("Date")
@@ -106,7 +103,7 @@ namespace DCAssignment2A.Migrations
             modelBuilder.Entity("DCAssignment2A.Models.BankAccount", b =>
                 {
                     b.HasOne("DCAssignment2A.Models.UserProfile", "userProfile")
-                        .WithMany()
+                        .WithMany("bankAccounts")
                         .HasForeignKey("UserProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -118,12 +115,19 @@ namespace DCAssignment2A.Migrations
                 {
                     b.HasOne("DCAssignment2A.Models.BankAccount", null)
                         .WithMany("transactions")
-                        .HasForeignKey("BankAccountId");
+                        .HasForeignKey("BankAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("DCAssignment2A.Models.BankAccount", b =>
                 {
                     b.Navigation("transactions");
+                });
+
+            modelBuilder.Entity("DCAssignment2A.Models.UserProfile", b =>
+                {
+                    b.Navigation("bankAccounts");
                 });
 #pragma warning restore 612, 618
         }

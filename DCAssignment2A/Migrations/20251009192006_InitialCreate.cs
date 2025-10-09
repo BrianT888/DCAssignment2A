@@ -56,11 +56,10 @@ namespace DCAssignment2A.Migrations
                 {
                     TransactionId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    AccountNumber = table.Column<int>(type: "INTEGER", nullable: false),
+                    BankAccountId = table.Column<int>(type: "INTEGER", nullable: false),
                     Date = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Amount = table.Column<decimal>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: true),
-                    BankAccountId = table.Column<int>(type: "INTEGER", nullable: true)
+                    Description = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -69,7 +68,8 @@ namespace DCAssignment2A.Migrations
                         name: "FK_Transactions_BankAccounts_BankAccountId",
                         column: x => x.BankAccountId,
                         principalTable: "BankAccounts",
-                        principalColumn: "BankAccountId");
+                        principalColumn: "BankAccountId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
