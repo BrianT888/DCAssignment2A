@@ -1,7 +1,10 @@
+using DCAssignment2A.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<DBManager>();//Context for DBManager class
 
 var app = builder.Build();
 
