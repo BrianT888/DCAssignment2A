@@ -26,16 +26,10 @@ namespace DCAssignment2A.Migrations
                     b.Property<int>("UserProfileId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("accountHolderName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("balance")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("BankAccountId");
-
-                    b.HasIndex("UserProfileId");
 
                     b.ToTable("BankAccounts");
                 });
@@ -60,8 +54,6 @@ namespace DCAssignment2A.Migrations
 
                     b.HasKey("TransactionId");
 
-                    b.HasIndex("BankAccountId");
-
                     b.ToTable("Transactions");
                 });
 
@@ -72,62 +64,26 @@ namespace DCAssignment2A.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("address")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("email")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("name")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("password")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("phoneNumber")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<byte[]>("profilePicture")
-                        .IsRequired()
                         .HasColumnType("BLOB");
 
                     b.HasKey("UserProfileId");
 
                     b.ToTable("UserProfiles");
-                });
-
-            modelBuilder.Entity("DCAssignment2A.Models.BankAccount", b =>
-                {
-                    b.HasOne("DCAssignment2A.Models.UserProfile", "userProfile")
-                        .WithMany("bankAccounts")
-                        .HasForeignKey("UserProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("userProfile");
-                });
-
-            modelBuilder.Entity("DCAssignment2A.Models.Transaction", b =>
-                {
-                    b.HasOne("DCAssignment2A.Models.BankAccount", null)
-                        .WithMany("transactions")
-                        .HasForeignKey("BankAccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("DCAssignment2A.Models.BankAccount", b =>
-                {
-                    b.Navigation("transactions");
-                });
-
-            modelBuilder.Entity("DCAssignment2A.Models.UserProfile", b =>
-                {
-                    b.Navigation("bankAccounts");
                 });
 #pragma warning restore 612, 618
         }

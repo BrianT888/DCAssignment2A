@@ -42,6 +42,22 @@ namespace DCAssignment2A.Controllers
             return bankAccount;
         }
 
+        [HttpGet("UserID/{id}")]
+        public async Task<ActionResult<IEnumerable<BankAccount>>> GetAllBankAccountsByUser(int id)
+        {
+            //checks bank accounts fk if it matches user id, if it does add to list
+            var bankAccounts = await _context.BankAccounts
+                .Where(b => b.UserProfileId == id)
+                .ToListAsync();
+
+            if (bankAccounts == null || bankAccounts.Count == 0)
+            {
+                return NotFound($"No bank accounts found for user with ID {id}.");
+            }
+
+            return Ok(bankAccounts);
+        }
+
         // PUT: api/BankAccounts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
