@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DCAssignment2A.Migrations
 {
     [DbContext(typeof(DBManager))]
-    [Migration("20251009234204_InitialCreate")]
+    [Migration("20251010021852_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -26,11 +26,20 @@ namespace DCAssignment2A.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("BankAccountHolderName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("BankAccountNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("BankName")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("UserProfileId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("balance")
-                        .HasColumnType("INTEGER");
+                    b.Property<decimal>("balance")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("BankAccountId");
 

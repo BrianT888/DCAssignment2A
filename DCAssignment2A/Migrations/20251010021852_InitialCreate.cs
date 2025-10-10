@@ -17,7 +17,10 @@ namespace DCAssignment2A.Migrations
                 {
                     BankAccountId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    balance = table.Column<int>(type: "INTEGER", nullable: false),
+                    BankAccountNumber = table.Column<int>(type: "INTEGER", nullable: false),
+                    BankAccountHolderName = table.Column<string>(type: "TEXT", nullable: true),
+                    BankName = table.Column<string>(type: "TEXT", nullable: true),
+                    balance = table.Column<decimal>(type: "TEXT", nullable: false),
                     UserProfileId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>

@@ -104,5 +104,33 @@ namespace DCAssignment2A.Controllers
         {
             return _context.UserProfiles.Any(e => e.UserProfileId == id);
         }
+
+        // GET: Username = api/UserProfiles/Name/{name}
+        [HttpGet("Name/{name}")]
+        public async Task<ActionResult<UserProfile>> GetUserProfileByUsername(string name)
+        {
+            var userProfile = await _context.UserProfiles.FirstOrDefaultAsync(u => u.name == name);
+
+            if (userProfile == null)
+            {
+                return NotFound($"No User found for {name}");
+            }
+
+            return userProfile;
+        }
+
+        // GET: Email = api/UserProfiles/Email/{email}
+        [HttpGet("Email/{email}")]
+        public async Task<ActionResult<UserProfile>> GetUserProfileByEmail(string email)
+        {
+            var userProfile = await _context.UserProfiles.FirstOrDefaultAsync(u => u.email == email);
+
+            if (userProfile == null)
+            {
+                return NotFound($"No User found for {email}");
+            }
+
+            return userProfile;
+        }
     }
 }

@@ -104,5 +104,65 @@ namespace DCAssignment2A.Controllers
         {
             return _context.Transactions.Any(e => e.TransactionId == id);
         }
+
+        //Withdaw
+        [HttpPut]
+        [Route("Withdraw/{accountNumber}/{amount}")]
+        public async Task<IActionResult> Withdraw(int accountNumber, decimal amount)
+        {
+            var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(b => b.BankAccountNumber == accountNumber);
+            if (bankAccount == null)
+            {
+                return NotFound("Bank account not found.");
+            }
+            if (amount <= 0)
+            {
+                return BadRequest("Withdrawal amount must be positive value.");
+            }
+            if (bankAccount.balance < amount)
+            {
+                return BadRequest("Insufficient funds.");
+            }
+
+            bankAccount.balance -= amount;
+            var transaction = new Transaction
+            {
+                BankAccountId = bankAccount.BankAccountId,
+                Date = DateTime.Now,
+                Amount = -amount, // Negative amount for withdrawal
+                Description = "Withdrawal"
+            };
+            _context.Transactions.Add(transaction);
+            await _context.SaveChangesAsync();
+
+            return Ok($"Successful Withdraw from {accountNumber}");
+        }
+
+        //Deposit
+        [HttpPut]
+        [Route("Deposit/{accountNumber}/{amount}")]
+        public async Task<IActionResult> Deposit(int accountNumber, decimal amount)
+        {
+            var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(b => b.BankAccountNumber == accountNumber);
+            if (bankAccount == null)
+            {
+                return NotFound("Bank account not found.");
+            }
+            if (amount <= 0)
+            {
+                return BadRequest("Deposit amount must be positive value.");
+            }
+            bankAccount.balance += amount;
+            var transaction = new Transaction
+            {
+                BankAccountId = bankAccount.BankAccountId,
+                Date = DateTime.Now,
+                Amount = amount, // Positive amount for deposit
+                Description = "Deposit"
+            };
+            _context.Transactions.Add(transaction);
+            await _context.SaveChangesAsync();
+            return Ok($"Successful Deposit to {accountNumber}");
+        }
     }
 }

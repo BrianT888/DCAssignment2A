@@ -42,22 +42,6 @@ namespace DCAssignment2A.Controllers
             return bankAccount;
         }
 
-        [HttpGet("UserID/{id}")]
-        public async Task<ActionResult<IEnumerable<BankAccount>>> GetAllBankAccountsByUser(int id)
-        {
-            //checks bank accounts fk if it matches user id, if it does add to list
-            var bankAccounts = await _context.BankAccounts
-                .Where(b => b.UserProfileId == id)
-                .ToListAsync();
-
-            if (bankAccounts == null || bankAccounts.Count == 0)
-            {
-                return NotFound($"No bank accounts found for user with ID {id}.");
-            }
-
-            return Ok(bankAccounts);
-        }
-
         // PUT: api/BankAccounts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
@@ -120,5 +104,35 @@ namespace DCAssignment2A.Controllers
         {
             return _context.BankAccounts.Any(e => e.BankAccountId == id);
         }
+
+        // GET: Account Number = api/BankAccounts/Number/{number}
+        [HttpGet("Number/{number}")]
+        public async Task<ActionResult<BankAccount>> GetUserProfileByUsername(int number)
+        {
+            var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(b => b.BankAccountNumber == number);
+
+            if (bankAccount == null)
+            {
+                return NotFound($"No Bank Account found for {number}");
+            }
+
+            return bankAccount;
+        }
+
+        //GET: All Bank Accounts by User ID = api/BankAccounts/UserID/{id}
+        [HttpGet("UserID/{id}")]
+        public async Task<ActionResult<IEnumerable<BankAccount>>> GetAllBankAccountsByUser(int id)
+        {
+            //checks bank accounts fk if it matches user id, if it does add to list
+            var bankAccounts = await _context.BankAccounts.Where(b => b.UserProfileId == id).ToListAsync();
+
+            if (bankAccounts == null || bankAccounts.Count == 0)
+            {
+                return NotFound($"No bank accounts found for user with ID {id}.");
+            }
+
+            return Ok(bankAccounts);
+        }
+
     }
 }
