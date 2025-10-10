@@ -73,12 +73,10 @@ namespace DCAssignment2A.Data
 
             // Generate random Transactions
             var transactions = new List<Transaction>();
-            var moneyOutDescriptions = new[] { "Cash Withdrawal", "Transfer out", "Payment", "Bill" };
-            var moneyInDescriptions = new[] { "Cash Deposit", "Transfer in", "Wages", "Interest Payment" };
             for (int i = 1; i <= random.Next(numUsers, numUsers*3); i++)
             {
                 var account = bankAccounts[random.Next(bankAccounts.Count)];   // Pick random account
-                var moneyOut = random.Next(2) == 0;    // 50/50 Chance of transaction being money-out or money-in
+                var isWithdrawal = random.Next(2) == 0;    // 50/50 change of withdrawal or deposit
                 var amount = Math.Round((decimal)(random.NextDouble() * 1000), 2);
 
                 var transaction = new Transaction
@@ -86,8 +84,8 @@ namespace DCAssignment2A.Data
                     TransactionId = i,
                     BankAccountId = account.BankAccountId,
                     Date = DateTime.Now.AddDays(-random.Next(1, 30)),
-                    Amount = moneyOut ? -amount : amount,   // Negative if money-out
-                    Description = moneyOut ? moneyOutDescriptions[random.Next(moneyOutDescriptions.Length)] : moneyInDescriptions[random.Next(moneyInDescriptions.Length)],
+                    Amount = isWithdrawal ? -amount : amount,   // Negative if withdrawal
+                    Description = isWithdrawal ? "Withdrawal" : "Deposit"
                 };
 
                 transactions.Add(transaction);
