@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using DCAssignment2A.Data;
+using DCAssignment2A.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using DCAssignment2A.Data;
-using DCAssignment2A.Models;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DCAssignment2A.Controllers
 {
@@ -74,10 +75,13 @@ namespace DCAssignment2A.Controllers
         }
 
         // POST: api/UserProfiles
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // wait we don't have exception handling for duplicate names or duplicate user profiles with matching data oops?
         [HttpPost]
         public async Task<ActionResult<UserProfile>> PostUserProfile(UserProfile userProfile)
         {
+            //set the user profile to have the default profile picture
+            userProfile.profilePicture = ProfilePicReader.GetDefaultPFP();
+
             _context.UserProfiles.Add(userProfile);
             await _context.SaveChangesAsync();
 
@@ -131,6 +135,20 @@ namespace DCAssignment2A.Controllers
             }
 
             return userProfile;
+        }
+
+        //get the profile picture for a user
+        [HttpGet("ProfilePic/{id}")]
+        public async Task<IActionResult> GetUserPFP(int id)
+        {
+            var userProfile = await _context.UserProfiles.FindAsync(id);
+
+            if (userProfile == null)
+            {
+                return NotFound($"No User found for {id}");
+            }
+
+            return File(userProfile.profilePicture, "image/jpeg");
         }
     }
 }
