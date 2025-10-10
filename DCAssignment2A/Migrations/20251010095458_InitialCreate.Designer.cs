@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DCAssignment2A.Migrations
 {
     [DbContext(typeof(DBManager))]
-    [Migration("20251010021852_InitialCreate")]
+    [Migration("20251010095458_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -43,6 +43,8 @@ namespace DCAssignment2A.Migrations
 
                     b.HasKey("BankAccountId");
 
+                    b.HasIndex("UserProfileId");
+
                     b.ToTable("BankAccounts");
                 });
 
@@ -65,6 +67,8 @@ namespace DCAssignment2A.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("TransactionId");
+
+                    b.HasIndex("BankAccountId");
 
                     b.ToTable("Transactions");
                 });
@@ -96,6 +100,24 @@ namespace DCAssignment2A.Migrations
                     b.HasKey("UserProfileId");
 
                     b.ToTable("UserProfiles");
+                });
+
+            modelBuilder.Entity("DCAssignment2A.Models.BankAccount", b =>
+                {
+                    b.HasOne("DCAssignment2A.Models.UserProfile", null)
+                        .WithMany()
+                        .HasForeignKey("UserProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DCAssignment2A.Models.Transaction", b =>
+                {
+                    b.HasOne("DCAssignment2A.Models.BankAccount", null)
+                        .WithMany()
+                        .HasForeignKey("BankAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

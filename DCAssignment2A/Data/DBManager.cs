@@ -17,10 +17,22 @@ namespace DCAssignment2A.Data
 
 
         //this method will let us seed the database with initial data
-        //not gonna bother putting anything data inside yet tho
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            //Set Cascade delete behaviour
+            //user profile 1 to many bank accounts
+            modelBuilder.Entity<BankAccount>()
+                .HasOne<UserProfile>()
+                .WithMany()
+                .HasForeignKey(b => b.UserProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            //bank account 1 to many transactions
+            modelBuilder.Entity<Transaction>()
+                .HasOne<BankAccount>()
+                .WithMany()
+                .HasForeignKey(t => t.BankAccountId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
