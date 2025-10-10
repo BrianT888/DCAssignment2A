@@ -6,7 +6,7 @@ namespace DCAssignment2A.Data
     // Generates random data into the database
     public static class DataSeeder
     {
-        private static readonly int numUsers = 10;
+        private static readonly int numUsers = 10;     // Determines how many UserProfiles and BankAccounts to make
         public static void Seed(DBManager context)
         {
             // Only seed if empty
@@ -60,7 +60,7 @@ namespace DCAssignment2A.Data
                     BankAccountNumber = random.Next(100000, 999999),
                     BankAccountHolderName = user.name,
                     BankName = banks[random.Next(banks.Length)],
-                    balance = Math.Round((decimal)(random.NextDouble() * 1000), 2),   // Random balance 0-9999
+                    balance = Math.Round((decimal)(random.NextDouble() * 10000), 2),   // Random balance 0-9999
                     UserProfileId = user.UserProfileId
                 };
 
