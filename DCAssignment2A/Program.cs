@@ -12,6 +12,14 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// Seed the database (will only seed if database is empty due to check in DataSeeder.cs)
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<DBManager>();
+    dbContext.Database.EnsureCreated();   // Make sure database exists
+    DataSeeder.Seed(dbContext);   // Call seeder
+}
+
 // Swagger Usage
 if (app.Environment.IsDevelopment())
 {
