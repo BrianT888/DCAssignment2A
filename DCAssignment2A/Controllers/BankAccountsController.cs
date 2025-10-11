@@ -134,23 +134,6 @@ namespace DCAssignment2A.Controllers
             return Ok(bankAccounts);
         }
 
-        // Update Bank Account Number
-        [HttpPut]
-        [Route("UpdateAccountNumber/{accountNumber}/{newAccountNumber}")]
-        public async Task<IActionResult> UpdateAccountNumber(int accountNumber, int newAccountNumber)
-        {
-            var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(b => b.BankAccountNumber == accountNumber);
-            if (bankAccount == null)
-            {
-                return NotFound("Bank account not found.");
-            }
-
-            bankAccount.BankAccountNumber = newAccountNumber;
-            await _context.SaveChangesAsync();
-
-            return Ok($"Successfully updated account number to {newAccountNumber}");
-        }
-
         // Update Bank Account Holder Name
         [HttpPut]
         [Route("UpdateHolderName/{accountNumber}/{holderName}")]
