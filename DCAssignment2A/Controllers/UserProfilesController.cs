@@ -150,5 +150,90 @@ namespace DCAssignment2A.Controllers
 
             return File(userProfile.profilePicture, "image/jpeg");
         }
+
+        // Update Name
+        [HttpPut]
+        [Route("UpdateName/{username}/{newName}")]
+        public async Task<IActionResult> UpdateName(string username, string newName)
+        {
+            var userProfile = await _context.UserProfiles.FirstOrDefaultAsync(u => u.name == username);
+            if (userProfile == null)
+            {
+                return NotFound("User profile not found.");
+            }
+
+            userProfile.name = newName;
+            await _context.SaveChangesAsync();
+
+            return Ok($"Successfully updated name to {newName}");
+        }
+
+        // Update Email
+        [HttpPut]
+        [Route("UpdateEmail/{username}/{newEmail}")]
+        public async Task<IActionResult> UpdateEmail(string username, string newEmail)
+        {
+            var userProfile = await _context.UserProfiles.FirstOrDefaultAsync(u => u.name == username);
+            if (userProfile == null)
+            {
+                return NotFound("User profile not found.");
+            }
+
+            userProfile.email = newEmail;
+            await _context.SaveChangesAsync();
+
+            return Ok($"Successfully updated email to {newEmail}");
+        }
+
+        // Update Address
+        [HttpPut]
+        [Route("UpdateAddress/{username}/{newAddress}")]
+        public async Task<IActionResult> UpdateAddress(string username, string newAddress)
+        {
+            var userProfile = await _context.UserProfiles.FirstOrDefaultAsync(u => u.name == username);
+            if (userProfile == null)
+            {
+                return NotFound("User profile not found.");
+            }
+
+            userProfile.address = newAddress;
+            await _context.SaveChangesAsync();
+
+            return Ok($"Successfully updated address to {newAddress}");
+        }
+
+        // Update Phone Number
+        [HttpPut]
+        [Route("UpdatePhoneNumber/{username}/{newPhoneNumber}")]
+        public async Task<IActionResult> UpdatePhoneNumber(string username, string newPhoneNumber)
+        {
+            var userProfile = await _context.UserProfiles.FirstOrDefaultAsync(u => u.name == username);
+            if (userProfile == null)
+            {
+                return NotFound("User profile not found.");
+            }
+
+            userProfile.phoneNumber = newPhoneNumber;
+            await _context.SaveChangesAsync();
+
+            return Ok($"Successfully updated phone number to {newPhoneNumber}");
+        }
+
+        // Update Password
+        [HttpPut]
+        [Route("UpdatePassword/{username}/{newPassword}")]
+        public async Task<IActionResult> UpdatePassword(string username, string newPassword)
+        {
+            var userProfile = await _context.UserProfiles.FirstOrDefaultAsync(u => u.name == username);
+            if (userProfile == null)
+            {
+                return NotFound("User profile not found.");
+            }
+
+            userProfile.password = newPassword;
+            await _context.SaveChangesAsync();
+
+            return Ok($"Successfully updated password");
+        }
     }
 }
