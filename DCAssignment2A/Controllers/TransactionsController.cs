@@ -25,21 +25,33 @@ namespace DCAssignment2A.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactions()
         {
-            return await _context.Transactions.ToListAsync();
+            try
+            {
+                return await _context.Transactions.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error retrieving transactions: {ex.Message}");
+            }
         }
 
         // GET: api/Transactions/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Transaction>> GetTransaction(int id)
         {
-            var transaction = await _context.Transactions.FindAsync(id);
+            if (id < 0) return BadRequest("Invalid input. ID value must be a positive integer.");
 
-            if (transaction == null)
+            try
             {
-                return NotFound();
-            }
+                var transaction = await _context.Transactions.FindAsync(id);
+                if (transaction == null) return NotFound($"Transaction with ID {id} not found.");
 
-            return transaction;
+                return transaction;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error retrieving transaction: {ex.Message}");
+            }
         }
 
         // PUT: api/Transactions/5
@@ -47,16 +59,16 @@ namespace DCAssignment2A.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTransaction(int id, Transaction transaction)
         {
-            if (id != transaction.TransactionId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(transaction).State = EntityState.Modified;
+            if (id < 0 || id != transaction.TransactionId) return BadRequest("\"Invalid or mismatched transaction ID.");
+            if (transaction == null) return BadRequest("Invalid transaction data.");
+            if (!_context.BankAccounts.Any(b => b.BankAccountId == transaction.BankAccountId)) return BadRequest("Invalid BankAccountId — account not found.");
+            if (transaction.Amount == 0) return BadRequest("Transaction amount cannot be zero.");
 
             try
             {
+                _context.Entry(transaction).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
+                return NoContent();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -69,8 +81,11 @@ namespace DCAssignment2A.Controllers
                     throw;
                 }
             }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error updating transaction: {ex.Message}");
+            }
 
-            return NoContent();
         }
 
         // POST: api/Transactions
@@ -78,26 +93,41 @@ namespace DCAssignment2A.Controllers
         [HttpPost]
         public async Task<ActionResult<Transaction>> PostTransaction(Transaction transaction)
         {
-            _context.Transactions.Add(transaction);
-            await _context.SaveChangesAsync();
+            if (transaction == null) return BadRequest("Invalid transaction data.");
 
-            return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
+            try
+            {
+                _context.Transactions.Add(transaction);
+                await _context.SaveChangesAsync();
+
+                return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error creating transaction: {ex.Message}");
+
+            }
         }
 
         // DELETE: api/Transactions/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTransaction(int id)
         {
-            var transaction = await _context.Transactions.FindAsync(id);
-            if (transaction == null)
+            if (id < 0) return BadRequest("Invalid input. ID value must be a positive integer.");
+
+            try
             {
-                return NotFound();
+                var transaction = await _context.Transactions.FindAsync(id);
+                if (transaction == null) return NotFound($"Transaction with ID {id} not found.");
+
+                _context.Transactions.Remove(transaction);
+                await _context.SaveChangesAsync();
+                return NoContent();
             }
-
-            _context.Transactions.Remove(transaction);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error deleting transaction: {ex.Message}");
+            }
         }
 
         private bool TransactionExists(int id)
@@ -110,32 +140,32 @@ namespace DCAssignment2A.Controllers
         [Route("Withdraw/{accountNumber}/{amount}")]
         public async Task<IActionResult> Withdraw(int accountNumber, decimal amount)
         {
-            var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(b => b.BankAccountNumber == accountNumber);
-            if (bankAccount == null)
-            {
-                return NotFound("Bank account not found.");
-            }
-            if (amount <= 0)
-            {
-                return BadRequest("Withdrawal amount must be positive value.");
-            }
-            if (bankAccount.balance < amount)
-            {
-                return BadRequest("Insufficient funds.");
-            }
+            if (accountNumber <= 0) return BadRequest("Invalid input. Account number must be greater than zero.");
+            if (amount <= 0) return BadRequest("Invalid input. Withdrawal amount must be positive.");
 
-            bankAccount.balance -= amount;
-            var transaction = new Transaction
+            try
             {
-                BankAccountId = bankAccount.BankAccountId,
-                Date = DateTime.Now,
-                Amount = -amount, // Negative amount for withdrawal
-                Description = "Withdrawal"
-            };
-            _context.Transactions.Add(transaction);
-            await _context.SaveChangesAsync();
+                var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(b => b.BankAccountNumber == accountNumber);
+                if (bankAccount == null) return NotFound("Bank account not found.");
+                if (bankAccount.balance < amount) return BadRequest("Insufficient funds.");
 
-            return Ok($"Successful Withdraw from {accountNumber}");
+                bankAccount.balance -= amount;
+                var transaction = new Transaction
+                {
+                    BankAccountId = bankAccount.BankAccountId,
+                    Date = DateTime.Now,
+                    Amount = -amount, // Negative amount for withdrawal
+                    Description = "Withdrawal"
+                };
+                _context.Transactions.Add(transaction);
+                await _context.SaveChangesAsync();
+
+                return Ok($"Successful Withdrawal of {amount} from {accountNumber}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error performing withdrawal: {ex.Message}");
+            }
         }
 
         //Deposit
@@ -143,26 +173,32 @@ namespace DCAssignment2A.Controllers
         [Route("Deposit/{accountNumber}/{amount}")]
         public async Task<IActionResult> Deposit(int accountNumber, decimal amount)
         {
-            var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(b => b.BankAccountNumber == accountNumber);
-            if (bankAccount == null)
+            if (accountNumber <= 0) return BadRequest("Invalid input. Account number must be greater than zero.");
+            if (amount <= 0) return BadRequest("Invalid input. Deposit amount must be positive.");
+
+            try
             {
-                return NotFound("Bank account not found.");
+                var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(b => b.BankAccountNumber == accountNumber);
+                if (bankAccount == null) return NotFound("Bank account not found.");
+                if (amount <= 0) return BadRequest("Deposit amount must be positive value.");
+
+                bankAccount.balance += amount;
+                var transaction = new Transaction
+                {
+                    BankAccountId = bankAccount.BankAccountId,
+                    Date = DateTime.Now,
+                    Amount = amount, // Positive amount for deposit
+                    Description = "Deposit"
+                };
+                _context.Transactions.Add(transaction);
+                await _context.SaveChangesAsync();
+                return Ok($"Successful Deposit of {amount} to {accountNumber}");
             }
-            if (amount <= 0)
+            catch (Exception ex)
             {
-                return BadRequest("Deposit amount must be positive value.");
+                return StatusCode(500, $"Error performing deposit: {ex.Message}");
+
             }
-            bankAccount.balance += amount;
-            var transaction = new Transaction
-            {
-                BankAccountId = bankAccount.BankAccountId,
-                Date = DateTime.Now,
-                Amount = amount, // Positive amount for deposit
-                Description = "Deposit"
-            };
-            _context.Transactions.Add(transaction);
-            await _context.SaveChangesAsync();
-            return Ok($"Successful Deposit to {accountNumber}");
         }
     }
 }
