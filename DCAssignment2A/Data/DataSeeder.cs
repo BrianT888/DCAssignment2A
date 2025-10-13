@@ -15,18 +15,29 @@ namespace DCAssignment2A.Data
             var random = new Random();
 
             // Generate random UserProfiles
-            var firstNames = new[] { "Sarah", "Bob", "Tim", "James", "Jack", "Chris", "John", "Ethan", "Sophie", "Mike"};
-            var lastNames = new[] { "Smith", "Johnson", "Brown", "Wilson", "White", "Lee", "Thompson", "Williams", "Miller", "Jones" };
             var streets = new[] { "Main Street", "High Street", "Willow Grove", "King Street", "Park Avenue", "Green Lane", "Maple Road", "South Grove", "William Street", "Birch Road" };
             var usedPhoneNumbers = new HashSet<string>();
+            var usedUsernames = new HashSet<string>();
             var userProfiles = new List<UserProfile>();
+
+            // Generate a random 8-character unique username
+            string GenerateUniqueUsername()
+            {
+                string username;
+                do
+                {
+                    // Random 8-character username
+                    const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+                    username = new string(Enumerable.Repeat(chars, 8).Select(s => s[random.Next(s.Length)]).ToArray());
+                } while (!usedUsernames.Add(username));
+
+                return username;
+            }
 
             for (int i = 1; i <= numUsers; i++)
             {
-                var firstName = firstNames[random.Next(firstNames.Length)];
-                var lastName = lastNames[random.Next(lastNames.Length)];
-                var fullName = $"{firstName} {lastName}";
-                var email = $"{firstName.ToLower()}{i}@gmail.com";
+                var name = GenerateUniqueUsername();
+                var email = $"{name.ToLower()}@gmail.com";
                 var address = $"{random.Next(1, 999)} {streets[random.Next(streets.Length)]}, Perth WA";
                 var password = "password{i}";
 
@@ -40,7 +51,7 @@ namespace DCAssignment2A.Data
                 var userProfile = new UserProfile
                 {
                     UserProfileId = i,
-                    name = fullName,
+                    name = name,
                     email = email,
                     address = address,
                     phoneNumber = phone,

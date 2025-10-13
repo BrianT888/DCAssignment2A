@@ -45,7 +45,7 @@ namespace DCAssignment2A.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<UserProfile>> GetUserProfile(int id)
         {
-            if (id <= 0) return BadRequest("Invalid input. ID value must be a positive integer.");
+            if (id < 0) return BadRequest("Invalid input. ID value must be a positive integer.");
 
             try
             {
@@ -64,14 +64,22 @@ namespace DCAssignment2A.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUserProfile(int id, UserProfile userProfile)
         {
-            if (id <= 0) return BadRequest("Invalid input. ID value must be a positive integer.");
+            if (id < 0) return BadRequest("Invalid input. ID value must be a positive integer.");
             if (id != userProfile.UserProfileId) return BadRequest("ID mismatch.");
             if (userProfile == null) return BadRequest("User profile cannot be null.");
+            if (string.IsNullOrWhiteSpace(userProfile.name)) return BadRequest("Name is required.");
+            if (string.IsNullOrWhiteSpace(userProfile.email)) return BadRequest("Email is required.");
+            if (string.IsNullOrWhiteSpace(userProfile.address)) return BadRequest("Address is required.");
+            if (string.IsNullOrWhiteSpace(userProfile.phoneNumber)) return BadRequest("Phone number is required.");
+            if (string.IsNullOrWhiteSpace(userProfile.password)) return BadRequest("Password is required.");
+            if (!Regex.IsMatch(userProfile.email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$")) return BadRequest("Invalid email format.");
+            if (!Regex.IsMatch(userProfile.phoneNumber, @"^04\d{8}$")) return BadRequest("Phone number must be in format 04XXXXXXXX.");
 
             // Check duplicates
-            if (_context.UserProfiles.Any(u => u.UserProfileId == userProfile.UserProfileId)) return Conflict("User profile ID already exists.");
-            if (_context.UserProfiles.Any(u => u.email == userProfile.email)) return Conflict("Email already exists.");
-            if (_context.UserProfiles.Any(u => u.phoneNumber == userProfile.phoneNumber)) return Conflict("Phone number already exists.");
+            if (_context.UserProfiles.Any(u => u.UserProfileId == userProfile.UserProfileId && u.UserProfileId != id)) return Conflict("User profile ID already exists.");
+            if (_context.UserProfiles.Any(u => u.email == userProfile.email && u.UserProfileId != id)) return Conflict("Email already exists.");
+            if (_context.UserProfiles.Any(u => u.phoneNumber == userProfile.phoneNumber && u.UserProfileId != id)) return Conflict("Phone number already exists.");
+            if (_context.UserProfiles.Any(u => u.name.ToLower() == userProfile.name.ToLower() && u.UserProfileId != id)) return Conflict("Username already exists.");
 
             _context.Entry(userProfile).State = EntityState.Modified;
 
@@ -118,7 +126,8 @@ namespace DCAssignment2A.Controllers
             if (_context.UserProfiles.Any(u => u.UserProfileId == userProfile.UserProfileId)) return Conflict("User profile ID already exists.");
             if (_context.UserProfiles.Any(u => u.email == userProfile.email)) return Conflict("Email already exists.");
             if (_context.UserProfiles.Any(u => u.phoneNumber == userProfile.phoneNumber)) return Conflict("Phone number already exists.");
-            
+            if (_context.UserProfiles.Any(u => u.name.ToLower() == userProfile.name.ToLower())) return Conflict("Username already exists.");
+
             try
             {
                 //set the user profile to have the default profile picture
@@ -273,6 +282,8 @@ namespace DCAssignment2A.Controllers
             if (id < 0) return BadRequest("Invalid input. ID value must be a positive integer.");
             if (string.IsNullOrWhiteSpace(newName)) return BadRequest("New name cannot be empty.");
 
+            if (_context.UserProfiles.Any(u => u.name.ToLower() == newName.ToLower())) return Conflict("Username already exists.");
+
             try
             {
                 var userProfile = await _context.UserProfiles.FirstOrDefaultAsync(u => u.UserProfileId == id);
@@ -364,21 +375,26 @@ namespace DCAssignment2A.Controllers
 
         // Update Password
         [HttpPut]
-        [Route("UpdatePassword/{username}/{newPassword}")]
-        public async Task<IActionResult> UpdatePassword(string username, string newPassword)
+        [Route("UpdatePassword/{id}/{newPassword}")]
+        public async Task<IActionResult> UpdatePassword(int id, string newPassword)
         {
+            if (id < 0) return BadRequest("Invalid input. ID value must be a positive integer.");
             if (string.IsNullOrWhiteSpace(newPassword)) return BadRequest("New password cannot be empty.");
 
-            var userProfile = await _context.UserProfiles.FirstOrDefaultAsync(u => u.name == username);
-            if (userProfile == null)
+            try
             {
-                return NotFound("User profile not found.");
+                var userProfile = await _context.UserProfiles.FirstOrDefaultAsync(u => u.UserProfileId == id);
+                if (userProfile == null) return NotFound("User profile not found.");
+
+                userProfile.password = newPassword;
+                await _context.SaveChangesAsync();
+
+                return Ok($"Successfully updated password to {newPassword}");
             }
-
-            userProfile.password = newPassword;
-            await _context.SaveChangesAsync();
-
-            return Ok($"Successfully updated password");
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error updating phone number: {ex.Message}");
+            }
         }
     }
 }

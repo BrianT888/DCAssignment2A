@@ -63,6 +63,7 @@ namespace DCAssignment2A.Controllers
             if (transaction == null) return BadRequest("Invalid transaction data.");
             if (!_context.BankAccounts.Any(b => b.BankAccountId == transaction.BankAccountId)) return BadRequest("Invalid BankAccountId — account not found.");
             if (transaction.Amount == 0) return BadRequest("Transaction amount cannot be zero.");
+            if (string.IsNullOrWhiteSpace(transaction.Description)) return BadRequest("Transaction description cannot be empty.");
 
             try
             {
@@ -94,6 +95,10 @@ namespace DCAssignment2A.Controllers
         public async Task<ActionResult<Transaction>> PostTransaction(Transaction transaction)
         {
             if (transaction == null) return BadRequest("Invalid transaction data.");
+            if (transaction.TransactionId < 0) return BadRequest("Transaction ID must be a positive integer.");
+            if (!_context.BankAccounts.Any(b => b.BankAccountId == transaction.BankAccountId)) return BadRequest("Invalid BankAccountId — account not found.");
+            if (transaction.Amount == 0) return BadRequest("Transaction amount cannot be zero.");
+            if (string.IsNullOrWhiteSpace(transaction.Description)) transaction.Description = transaction.Amount > 0 ? "Deposit" : "Withdrawal";
 
             try
             {

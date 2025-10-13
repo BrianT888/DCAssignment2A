@@ -68,8 +68,8 @@ namespace DCAssignment2A.Controllers
             if (_context.BankAccounts.Any(b => b.BankAccountNumber == bankAccount.BankAccountNumber)) return BadRequest("Bank account number already exists.");
 
             // Check Duplicates
-            if (_context.BankAccounts.Any(b => b.BankAccountId == bankAccount.BankAccountId)) return Conflict("Bank account ID already exists.");
-            if (_context.BankAccounts.Any(b => b.BankAccountNumber == bankAccount.BankAccountNumber)) return Conflict("Bank account number already exists.");
+            if (_context.BankAccounts.Any(b => b.BankAccountId == bankAccount.BankAccountId && b.BankAccountId != id)) return Conflict("Bank account ID already exists.");
+            if (_context.BankAccounts.Any(b => b.BankAccountNumber == bankAccount.BankAccountNumber && b.BankAccountId != id)) return Conflict("Bank account number already exists.");
 
             try
             {
