@@ -205,5 +205,25 @@ namespace DCAssignment2A.Controllers
 
             }
         }
+
+        //Get a list of transactions for a specific bank account by account number
+        [HttpGet("Transactions/{accountNumber}")]
+        public async Task<ActionResult<IEnumerable<BankAccount>>> GetAllBankAccountsByUser(int accountNumber)
+        {
+            try
+            {
+                var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(b => b.BankAccountNumber == accountNumber);
+                if (bankAccount == null) return NotFound("Bank account not found.");
+
+                var transactions = await _context.Transactions.Where(t => t.BankAccountId == bankAccount.BankAccountId).ToListAsync();
+                if (transactions == null || transactions.Count == 0) return NotFound($"No Transactions found for bank account {accountNumber}");
+
+                return Ok(transactions);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error fetching Transaction list for bank account: {ex.Message}");
+            }
+        }
     }
 }
