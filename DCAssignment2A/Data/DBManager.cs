@@ -16,7 +16,6 @@ namespace DCAssignment2A.Data
         public DbSet<Transaction> Transactions { get; set; }
 
 
-        //this method will let us seed the database with initial data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //Set Cascade delete behaviour
