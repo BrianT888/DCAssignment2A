@@ -55,42 +55,40 @@ namespace DCAssignment2A.Controllers
         }
 
         // PUT: api/Transactions/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutTransaction(int id, Transaction transaction)
-        {
-            if (id < 0 || id != transaction.TransactionId) return BadRequest("\"Invalid or mismatched transaction ID.");
-            if (transaction == null) return BadRequest("Invalid transaction data.");
-            if (!_context.BankAccounts.Any(b => b.BankAccountId == transaction.BankAccountId)) return BadRequest("Invalid BankAccountId — account not found.");
-            if (transaction.Amount == 0) return BadRequest("Transaction amount cannot be zero.");
-            if (string.IsNullOrWhiteSpace(transaction.Description)) return BadRequest("Transaction description cannot be empty.");
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> PutTransaction(int id, Transaction transaction)
+        //{
+        //    if (id < 0 || id != transaction.TransactionId) return BadRequest("\"Invalid or mismatched transaction ID.");
+        //    if (transaction == null) return BadRequest("Invalid transaction data.");
+        //    if (!_context.BankAccounts.Any(b => b.BankAccountId == transaction.BankAccountId)) return BadRequest("Invalid BankAccountId — account not found.");
+        //    if (transaction.Amount == 0) return BadRequest("Transaction amount cannot be zero.");
+        //    if (string.IsNullOrWhiteSpace(transaction.Description)) return BadRequest("Transaction description cannot be empty.");
 
-            try
-            {
-                _context.Entry(transaction).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-                return NoContent();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TransactionExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error updating transaction: {ex.Message}");
-            }
+        //    try
+        //    {
+        //        _context.Entry(transaction).State = EntityState.Modified;
+        //        await _context.SaveChangesAsync();
+        //        return NoContent();
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        if (!TransactionExists(id))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"Error updating transaction: {ex.Message}");
+        //    }
 
-        }
+        //}
 
         // POST: api/Transactions
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Transaction>> PostTransaction(Transaction transaction)
         {
@@ -115,25 +113,25 @@ namespace DCAssignment2A.Controllers
         }
 
         // DELETE: api/Transactions/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTransaction(int id)
-        {
-            if (id < 0) return BadRequest("Invalid input. ID value must be a positive integer.");
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> DeleteTransaction(int id)
+        //{
+        //    if (id < 0) return BadRequest("Invalid input. ID value must be a positive integer.");
 
-            try
-            {
-                var transaction = await _context.Transactions.FindAsync(id);
-                if (transaction == null) return NotFound($"Transaction with ID {id} not found.");
+        //    try
+        //    {
+        //        var transaction = await _context.Transactions.FindAsync(id);
+        //        if (transaction == null) return NotFound($"Transaction with ID {id} not found.");
 
-                _context.Transactions.Remove(transaction);
-                await _context.SaveChangesAsync();
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error deleting transaction: {ex.Message}");
-            }
-        }
+        //        _context.Transactions.Remove(transaction);
+        //        await _context.SaveChangesAsync();
+        //        return NoContent();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"Error deleting transaction: {ex.Message}");
+        //    }
+        //}
 
         private bool TransactionExists(int id)
         {

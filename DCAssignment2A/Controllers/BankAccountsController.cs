@@ -56,7 +56,6 @@ namespace DCAssignment2A.Controllers
         }
 
         // PUT: api/BankAccounts/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutBankAccount(int id, BankAccount bankAccount)
         {
@@ -95,7 +94,6 @@ namespace DCAssignment2A.Controllers
         }
 
         // POST: api/BankAccounts
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<BankAccount>> PostBankAccount(BankAccount bankAccount)
         {

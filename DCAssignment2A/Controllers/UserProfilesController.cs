@@ -60,7 +60,6 @@ namespace DCAssignment2A.Controllers
         }
 
         // PUT: api/UserProfiles/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUserProfile(int id, UserProfile userProfile)
         {
@@ -80,6 +79,7 @@ namespace DCAssignment2A.Controllers
             if (_context.UserProfiles.Any(u => u.email == userProfile.email && u.UserProfileId != id)) return Conflict("Email already exists.");
             if (_context.UserProfiles.Any(u => u.phoneNumber == userProfile.phoneNumber && u.UserProfileId != id)) return Conflict("Phone number already exists.");
             if (_context.UserProfiles.Any(u => u.name.ToLower() == userProfile.name.ToLower() && u.UserProfileId != id)) return Conflict("Username already exists.");
+            userProfile.profilePicture = ProfilePicReader.GetDefaultPFP();
 
             _context.Entry(userProfile).State = EntityState.Modified;
 
@@ -107,7 +107,6 @@ namespace DCAssignment2A.Controllers
         }
 
         // POST: api/UserProfiles
-        // wait we don't have exception handling for duplicate names or duplicate user profiles with matching data oops?
         [HttpPost]
         public async Task<ActionResult<UserProfile>> PostUserProfile(UserProfile userProfile)
         {
