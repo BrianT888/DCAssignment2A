@@ -25,38 +25,56 @@ namespace DCAssignment2A.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BankAccount>>> GetBankAccounts()
         {
-            return await _context.BankAccounts.ToListAsync();
+            try
+            {
+                return await _context.BankAccounts.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error retrieving bank accounts: {ex.Message}");
+            }
         }
 
         // GET: api/BankAccounts/5
         [HttpGet("{id}")]
         public async Task<ActionResult<BankAccount>> GetBankAccount(int id)
         {
-            var bankAccount = await _context.BankAccounts.FindAsync(id);
-
-            if (bankAccount == null)
-            {
-                return NotFound();
-            }
-
-            return bankAccount;
-        }
-
-        // PUT: api/BankAccounts/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutBankAccount(int id, BankAccount bankAccount)
-        {
-            if (id != bankAccount.BankAccountId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(bankAccount).State = EntityState.Modified;
+            if (id < 0) return BadRequest("Invalid input. ID value must be a positive integer.");
 
             try
             {
+                var bankAccount = await _context.BankAccounts.FindAsync(id);
+
+                if (bankAccount == null) return NotFound($"Bank account with ID {id} not found.");
+
+                return bankAccount;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error retrieving bank account: {ex.Message}");
+            }
+        }
+
+        // PUT: api/BankAccounts/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutBankAccount(int id, BankAccount bankAccount)
+        {
+            if (id < 0 || id != bankAccount.BankAccountId) return BadRequest("Invalid or mismatched bank account ID.");
+            if (bankAccount == null) return BadRequest("Invalid bank account data.");
+            if (string.IsNullOrWhiteSpace(bankAccount.BankName)) return BadRequest("Bank name cannot be empty.");
+            if (string.IsNullOrWhiteSpace(bankAccount.BankAccountHolderName)) return BadRequest("Holder name cannot be empty.");
+            if (bankAccount.balance < 0) return BadRequest("Balance cannot be negative.");
+            if (_context.BankAccounts.Any(b => b.BankAccountNumber == bankAccount.BankAccountNumber)) return BadRequest("Bank account number already exists.");
+
+            // Check Duplicates
+            if (_context.BankAccounts.Any(b => b.BankAccountId == bankAccount.BankAccountId && b.BankAccountId != id)) return Conflict("Bank account ID already exists.");
+            if (_context.BankAccounts.Any(b => b.BankAccountNumber == bankAccount.BankAccountNumber && b.BankAccountId != id)) return Conflict("Bank account number already exists.");
+
+            try
+            {
+                _context.Entry(bankAccount).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
+                return NoContent();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -69,37 +87,61 @@ namespace DCAssignment2A.Controllers
                     throw;
                 }
             }
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error updating bank account: {ex.Message}");
+            }
         }
 
         // POST: api/BankAccounts
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<BankAccount>> PostBankAccount(BankAccount bankAccount)
         {
-            _context.BankAccounts.Add(bankAccount);
-            await _context.SaveChangesAsync();
+            if (bankAccount == null) return BadRequest("Invalid bank account data.");
+            if (bankAccount.UserProfileId < 0) return BadRequest("ID must be a positive integer.");
+            if (bankAccount.balance < 0) return BadRequest("Invalid input. Balance cannot be negative.");
+            if (bankAccount.BankAccountNumber <= 0) return BadRequest("Invalid input. Bank account number must be greater than zero.");
+            if (string.IsNullOrWhiteSpace(bankAccount.BankName)) return BadRequest("Bank name cannot be empty.");
+            if (string.IsNullOrWhiteSpace(bankAccount.BankAccountHolderName)) return BadRequest("Holder name cannot be empty.");
 
-            return CreatedAtAction("GetBankAccount", new { id = bankAccount.BankAccountId }, bankAccount);
+            // Check Duplicates
+            if (_context.BankAccounts.Any(b => b.BankAccountId == bankAccount.BankAccountId)) return Conflict("Bank account ID already exists.");
+            if (_context.BankAccounts.Any(b => b.BankAccountNumber == bankAccount.BankAccountNumber)) return Conflict("Bank account number already exists.");
+
+            try
+            {
+                _context.BankAccounts.Add(bankAccount);
+                await _context.SaveChangesAsync();
+                return CreatedAtAction("GetBankAccount", new { id = bankAccount.BankAccountId }, bankAccount);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error creating bank account: {ex.Message}");
+            }
         }
 
         // DELETE: api/BankAccounts/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBankAccount(int id)
         {
-            var bankAccount = await _context.BankAccounts.FindAsync(id);
-            if (bankAccount == null)
+            if (id < 0) return BadRequest("Invalid input. ID value must be a positive integer.");
+
+            try
             {
-                return NotFound();
+                var bankAccount = await _context.BankAccounts.FindAsync(id);
+                if (bankAccount == null) return NotFound($"Bank account with ID {id} not found.");
+
+                _context.BankAccounts.Remove(bankAccount);
+                await _context.SaveChangesAsync();
+                return NoContent();
             }
-
-            _context.BankAccounts.Remove(bankAccount);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error deleting bank account: {ex.Message}");
+            }
         }
 
+        // Checks if bank account with given id exists in the database
         private bool BankAccountExists(int id)
         {
             return _context.BankAccounts.Any(e => e.BankAccountId == id);
@@ -107,31 +149,41 @@ namespace DCAssignment2A.Controllers
 
         // GET: Account Number = api/BankAccounts/Number/{number}
         [HttpGet("Number/{number}")]
-        public async Task<ActionResult<BankAccount>> GetUserProfileByUsername(int number)
+        public async Task<ActionResult<BankAccount>> GetBankAccountByAccountNumber(int number)
         {
-            var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(b => b.BankAccountNumber == number);
+            if (number <= 0) return BadRequest("Invalid input. Bank account number must be greater than zero.");
 
-            if (bankAccount == null)
+            try
             {
-                return NotFound($"No Bank Account found for {number}");
-            }
+                var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(b => b.BankAccountNumber == number);
+                if (bankAccount == null) return NotFound($"No bank account found with account number: {number}");
 
-            return bankAccount;
+                return bankAccount;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error finding bank account: {ex.Message}");
+            }
         }
 
         //GET: All Bank Accounts by User ID = api/BankAccounts/UserID/{id}
         [HttpGet("UserID/{id}")]
         public async Task<ActionResult<IEnumerable<BankAccount>>> GetAllBankAccountsByUser(int id)
         {
-            //checks bank accounts fk if it matches user id, if it does add to list
-            var bankAccounts = await _context.BankAccounts.Where(b => b.UserProfileId == id).ToListAsync();
+            if (id < 0) return BadRequest("Invalid input. ID value must be a positive integer.");
 
-            if (bankAccounts == null || bankAccounts.Count == 0)
+            try
             {
-                return NotFound($"No bank accounts found for user with ID {id}.");
-            }
+                //checks bank accounts fk if it matches user id, if it does add to list
+                var bankAccounts = await _context.BankAccounts.Where(b => b.UserProfileId == id).ToListAsync();
+                if (bankAccounts == null || bankAccounts.Count == 0) return NotFound($"No bank accounts found for user with ID: {id}.");
 
-            return Ok(bankAccounts);
+                return Ok(bankAccounts);
+            }         
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error fetching bank accounts: {ex.Message}");
+            }
         }
 
         // Update Bank Account Holder Name
@@ -139,16 +191,21 @@ namespace DCAssignment2A.Controllers
         [Route("UpdateHolderName/{accountNumber}/{holderName}")]
         public async Task<IActionResult> UpdateHolderName(int accountNumber, string holderName)
         {
-            var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(b => b.BankAccountNumber == accountNumber);
-            if (bankAccount == null)
+            if (accountNumber <= 0 || string.IsNullOrWhiteSpace(holderName)) return BadRequest("Invalid input. Account number must be a positive integer and holder name cannot be empty.");
+
+            try
             {
-                return NotFound("Bank account not found.");
+                var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(b => b.BankAccountNumber == accountNumber);
+                if (bankAccount == null) return NotFound($"No bank accounts found with account number: {accountNumber}.");
+
+                bankAccount.BankAccountHolderName = holderName.Trim();
+                await _context.SaveChangesAsync();
+                return Ok($"Successfully updated holder name to {holderName}");
             }
-
-            bankAccount.BankAccountHolderName = holderName;
-            await _context.SaveChangesAsync();
-
-            return Ok($"Successfully updated holder name to {holderName}");
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error updating holder name: {ex.Message}");
+            }
         }
 
         // update Bank Name
@@ -156,16 +213,22 @@ namespace DCAssignment2A.Controllers
         [Route("UpdateBankName/{accountNumber}/{bankName}")]
         public async Task<IActionResult> UpdateBankName(int accountNumber, string bankName)
         {
-            var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(b => b.BankAccountNumber == accountNumber);
-            if (bankAccount == null)
+            if (accountNumber <= 0 || string.IsNullOrWhiteSpace(bankName)) return BadRequest("Invalid input. Account number must be a positive integer and bank name cannot be empty.");
+
+            try
             {
-                return NotFound("Bank account not found.");
+                var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(b => b.BankAccountNumber == accountNumber);
+                if (bankAccount == null) return NotFound($"No bank accounts found with account number: {accountNumber}.");
+
+                bankAccount.BankName = bankName.Trim();
+                await _context.SaveChangesAsync();
+                return Ok($"Successfully updated bank name to {bankName}");
             }
-
-            bankAccount.BankName = bankName;
-            await _context.SaveChangesAsync();
-
-            return Ok($"Successfully updated bank name to {bankName}");
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error updating bank name: {ex.Message}");
+            }
+            
         }
 
         // Update Balance
@@ -173,21 +236,22 @@ namespace DCAssignment2A.Controllers
         [Route("UpdateBalance/{accountNumber}/{balance}")]
         public async Task<IActionResult> UpdateBalance(int accountNumber, decimal balance)
         {
-            var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(b => b.BankAccountNumber == accountNumber);
-            if (bankAccount == null)
+            if (accountNumber <= 0) return BadRequest("Invalid input. Account number must be a positive integer.");
+            if (balance < 0) return BadRequest("Invalid input. Balance cannot be negative.");
+
+            try
             {
-                return NotFound("Bank account not found.");
-            }
+                var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(b => b.BankAccountNumber == accountNumber);
+                if (bankAccount == null) return NotFound($"No bank accounts found with account number: {accountNumber}.");
 
-            if (balance < 0)
+                bankAccount.balance = balance;
+                await _context.SaveChangesAsync();
+                return Ok($"Successfully updated balance to {balance}");
+            }
+            catch (Exception ex)
             {
-                return BadRequest("Balance cannot be negative.");
+                return StatusCode(500, $"Error updating balance: {ex.Message}");
             }
-
-            bankAccount.balance = balance;
-            await _context.SaveChangesAsync();
-
-            return Ok($"Successfully updated balance to {balance}");
         }
     }
 }

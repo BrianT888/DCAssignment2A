@@ -1,6 +1,7 @@
 ﻿using DCAssignment2A.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DCAssignment2A.Controllers
 {
@@ -18,8 +19,12 @@ namespace DCAssignment2A.Controllers
         // GET: api/Database/Clear
         [HttpGet("Clear")]
         public async Task<IActionResult> ClearDatabase()
-        {
-            _context.Transactions.RemoveRange(_context.Transactions);
+        {        
+            await _context.Database.ExecuteSqlRawAsync("DELETE FROM sqlite_sequence WHERE name='UserProfiles';");
+            await _context.Database.ExecuteSqlRawAsync("DELETE FROM sqlite_sequence WHERE name='BankAccounts';");
+            await _context.Database.ExecuteSqlRawAsync("DELETE FROM sqlite_sequence WHERE name='Transactions';");
+
+             _context.Transactions.RemoveRange(_context.Transactions);
             _context.BankAccounts.RemoveRange(_context.BankAccounts);
             _context.UserProfiles.RemoveRange(_context.UserProfiles);
             await _context.SaveChangesAsync();
@@ -32,6 +37,9 @@ namespace DCAssignment2A.Controllers
         public async Task<IActionResult> ReseedDatabase()
         {
             // Clear first
+            await _context.Database.ExecuteSqlRawAsync("DELETE FROM sqlite_sequence WHERE name='UserProfiles';");
+            await _context.Database.ExecuteSqlRawAsync("DELETE FROM sqlite_sequence WHERE name='BankAccounts';");
+            await _context.Database.ExecuteSqlRawAsync("DELETE FROM sqlite_sequence WHERE name='Transactions';");
             _context.Transactions.RemoveRange(_context.Transactions);
             _context.BankAccounts.RemoveRange(_context.BankAccounts);
             _context.UserProfiles.RemoveRange(_context.UserProfiles);
