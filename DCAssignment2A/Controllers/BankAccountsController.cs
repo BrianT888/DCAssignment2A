@@ -120,30 +120,6 @@ namespace DCAssignment2A.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("CreateBank/{uID}/{balance}/{bAccNo}/{bankName}/{bHolderName}")]
-        public async Task<ActionResult<BankAccount>> CreateBankAccount(int uID, decimal balance, int bAccNo, string bankName, string bHolderName)
-        {
-            var bankAccount = new BankAccount
-            {
-                UserProfileId = uID,
-                balance = balance,
-                BankAccountNumber = bAccNo,
-                BankName = bankName,
-                BankAccountHolderName = bHolderName
-            };
-            try
-            {
-                _context.BankAccounts.Add(bankAccount);
-                await _context.SaveChangesAsync();
-                return CreatedAtAction("GetBankAccount", new { id = bankAccount.BankAccountId }, bankAccount);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error creating bank account: {ex.Message}");
-            }
-        }
-
         // DELETE: api/BankAccounts/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBankAccount(int id)

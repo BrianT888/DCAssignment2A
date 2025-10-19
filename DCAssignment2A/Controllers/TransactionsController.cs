@@ -112,32 +112,6 @@ namespace DCAssignment2A.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("CreateTransactions/{bID}/{amount}")]
-
-        public async Task<ActionResult<Transaction>> CreateTransaction(int bID, decimal amount)
-        {
-            if (bID < 0) return BadRequest("Invalid BankAccountId — account not found.");
-            if (amount == 0) return BadRequest("Transaction amount cannot be zero.");
-            try
-            {
-                var transaction = new Transaction
-                {
-                    BankAccountId = bID,
-                    Date = DateTime.Now,
-                    Amount = amount,
-                    Description = amount > 0 ? "Deposit" : "Withdrawal"
-                };
-                _context.Transactions.Add(transaction);
-                await _context.SaveChangesAsync();
-                return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error creating transaction: {ex.Message}");
-            }
-        }
-
         // DELETE: api/Transactions/5
         //[HttpDelete("{id}")]
         //public async Task<IActionResult> DeleteTransaction(int id)

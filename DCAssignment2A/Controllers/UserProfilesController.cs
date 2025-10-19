@@ -146,26 +146,6 @@ namespace DCAssignment2A.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("Register/{name}/{email}/{address}/{phoneNo}/{password}")]
-        public async Task<ActionResult<UserProfile>> RegisterUserProfile(string name, string email, string address, string phoneNo, string password)
-        {
-            //no error handling just testing
-            var userProfile = new UserProfile
-            {
-                name = name,
-                email = email,
-                address = address,
-                phoneNumber = phoneNo,
-                profilePicture = ProfilePicReader.GetDefaultPFP(),
-                password = password
-            };
-            _context.UserProfiles.Add(userProfile);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction("GetUserProfile", new { id = userProfile.UserProfileId }, userProfile);
-        }
-
-
         // DELETE: api/UserProfiles/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUserProfile(int id)
